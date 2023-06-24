@@ -32,19 +32,19 @@ async function main() {
     // const [testGame, standaloneShuffle, secureAdd] = await deployContracts_wStandalones(signers);    
     // /* 
 
-    const standaloneShuffleAddress = '0x11dfDd2525c5822dA2186Fc75B5dA87aDF2543fF';
+    const standaloneShuffleAddress = '0x910D9A237E41D5e5D3F2198802F40167a3e5D2a4';
     const standaloneShuffle = 
         new Contract(standaloneShuffleAddress, 
                      JSON.stringify(standaloneShuffleArtifact.abi), 
                      owner) as any as StandaloneShuffle;
 
-    const secureAddAddress = '0x7BA8C2D962409A8f5B387355E8968b1BD9430Ab8';
+    const secureAddAddress = '0x82A90a2bB096eb58441337D9fCB070c49EF01cad';
     const secureAdd = 
         new Contract(secureAddAddress, 
                      JSON.stringify(secureAddArtifact.abi), 
                      owner) as any as SecureAdd;
 
-    const gameContractAddress = '0xf1C385a03D2a8DcA6CcfaAf1AA929eB468F21302';
+    const gameContractAddress = '0x954120C042f4a4f3654957362D8D3A69D31E22ed';
     const testGame = 
         new Contract(gameContractAddress, JSON.stringify(testgameArtifact.abi), owner) as any as TestGame;   
 
@@ -52,7 +52,7 @@ async function main() {
 
     // await setupListeners(node_url);
 
-    const demoWeb3 = false;
+    const demoWeb3 = true;
 
     await gameflow.lobby(testGame, owner, players, demoWeb3);
 
