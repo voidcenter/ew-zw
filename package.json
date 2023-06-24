@@ -5,6 +5,11 @@
   "repository": "git@github.com:voidcenter/ethwaterloo-zkwerewolf.git",
   "author": "Justin Zhang",
   "license": "GPL 3",
+  "scripts": {
+    "em": "hardhat run scripts/tools/eventMonitor.ts",
+    "testlocalnet": "hardhat run --network ganache scripts/testNetwork.ts",
+    "testmumbai": "hardhat run --network mumbai scripts/testNetwork.ts"
+  },
   "dependencies": {
     "@ethersproject/hdnode": "^5.7.0",
     "@nomicfoundation/hardhat-chai-matchers": "^1.0.0",
