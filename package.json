@@ -1,0 +1,16 @@
+{
+  "name": "ethwaterloo-zkwerewolf",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:voidcenter/ethwaterloo-zkwerewolf.git",
+  "author": "Justin Zhang",
+  "license": "GPL 3",
+  "dependencies": {
+    "circomlib": "^2.0.5",
+    "dotenv": "^16.3.1",
+    "hardhat": "^2.16.0",
+    "hardhat-circom": "^3.3.2",
+    "snarkjs": "^0.7.0",
+    "typescript": "^5.1.3"
+  }
+}
