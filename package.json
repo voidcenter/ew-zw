@@ -1,14 +1,15 @@
 {
-  "name": "ethwaterloo-zkwerewolf",
+  "name": "dev",
   "version": "1.0.0",
-  "main": "index.js",
-  "repository": "git@github.com:voidcenter/ethwaterloo-zkwerewolf.git",
+  "description": "Dev version",
+  "main": "src/app.ts",
+  "repository": "https://github.com/voidcenter/autocylons",
   "author": "Justin Zhang",
   "license": "GPL 3",
   "scripts": {
-    "em": "hardhat run scripts/tools/eventMonitor.ts",
-    "testlocalnet": "hardhat run --network ganache scripts/testNetwork.ts",
-    "testmumbai": "hardhat run --network mumbai scripts/testNetwork.ts"
+    "compile:circom": "hardhat circom --verbose",
+    "dgg": "hardhat run --network ganache scripts/demoGame.ts",
+    "chatserver": "node ./chat/index.js"
   },
   "dependencies": {
     "@ethersproject/hdnode": "^5.7.0",
@@ -32,7 +33,9 @@
     "hardhat-circom": "^3.3.2",
     "hardhat-gas-reporter": "^1.0.8",
     "js-sha3": "^0.8.0",
+    "openai": "^3.3.0",
     "snarkjs": "^0.7.0",
+    "socket.io-client": "^4.7.0",
     "solidity-coverage": "^0.8.1",
     "truffle": "^5.9.4",
     "truffle-hdwallet-provider": "^1.0.17",

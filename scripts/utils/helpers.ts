@@ -213,6 +213,7 @@ export async function deployContracts_wStandalones(signers: Wallet[]):
     await standaloneShuffle.waitForDeployment();
     console.log("StandaloneShuffle deployed to: ", await standaloneShuffle.getAddress());
 
+    await sleep(1000);
 
     console.log("deploying Standalone secure add ... ");
     const SecureAdd = await ethers.getContractFactory("SecureAdd");
@@ -224,6 +225,7 @@ export async function deployContracts_wStandalones(signers: Wallet[]):
     await secureAdd.waitForDeployment();
     console.log("Secure add deployed to: ", await secureAdd.getAddress());
 
+    await sleep(1000);
 
     console.log("deploying TestGame ... ");
     const TestGame = await ethers.getContractFactory("contracts/TestGame.sol:TestGame");    
@@ -235,17 +237,18 @@ export async function deployContracts_wStandalones(signers: Wallet[]):
     await testGame.waitForDeployment();
     console.log("TestGame deployed to: ", await testGame.getAddress());
 
+    await sleep(1000);
 
     // await ((await testGame.connect(owner).transferSSOwner(testGame.getAddress())).wait());
 
-
+    
     // make testGame the owner of standalone shuffle
     console.log("transfering ownership of standalone shuffle to testgame ...");
-    await (await standaloneShuffle.connect(owner).transferOwnership(testGame.getAddress())).wait();
+    await (await standaloneShuffle.connect(owner).transferOwnership(testGame.getAddress())).wait(2);
     console.log('standalone shuffle owner = ', await standaloneShuffle.owner());
 
     console.log("transfering ownership of standalone secure add to testgame ...");
-    await (await secureAdd.connect(owner).transferOwnership(testGame.getAddress())).wait();
+    await (await secureAdd.connect(owner).transferOwnership(testGame.getAddress())).wait(2);
     console.log('standalone secure add owner = ', await secureAdd.owner());
 
 

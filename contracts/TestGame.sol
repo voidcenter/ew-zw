@@ -13,6 +13,8 @@ import "./GameStorage.sol";
 
 contract TestGame is GameStorage {
 
+
+    event Debug_Deck(uint[2][] deck);
     
     // The contructor mostly set up the ZK verifiers.
     constructor(address _zkShuffle, address _secureAdd) {
@@ -147,6 +149,9 @@ contract TestGame is GameStorage {
         // clean up player list
         delete playerAddresses;   // delete its elements  
         emit ReturnToLobby();
+
+        zkShuffle.returnToLobby();
+        secureAdd.returnToLobby();
     }
 
     // A new player joins the game
@@ -160,7 +165,7 @@ contract TestGame is GameStorage {
         playerInGame[player] = true;
         nPlayers = playerAddresses.length;
         nPlayersStillInGame = nPlayers;
-        emit PlayerJoined(player, nPlayers);
+        emit PlayerJoined(nPlayers-1, player, nPlayers);
     }
 
     // Initialize a game. 
@@ -251,12 +256,17 @@ contract TestGame is GameStorage {
 
     function dayVote(uint vote) public {
         uint playerIndex = getPlayerIndex(msg.sender);
+
+        emit PlayerDayVote(playerIndex, vote);
+
         require(gameState == GameState.DAY_VOTE, "not day voting");
         require(playerIndex >= 0 && playerIndex < nPlayers, "player not in game");
         require(playerStillInGame[playerIndex], "eliminated player can't vote");
         require(vote != playerIndex, "can't vote for self");
         require(vote >= 0 && vote < nPlayers, "voted player not in game");
         require(playerStillInGame[vote], "can't vote for eliminated player");
+
+        emit PlayerDayVote(playerIndex, vote);
 
         dayVotes[playerIndex] = vote;
         emit PlayerDayVote(playerIndex, vote);
@@ -291,6 +301,13 @@ contract TestGame is GameStorage {
         // check winning condition
         gameState = GameState.DAY_WINCHECK_CREATE;
         stateToGoAfterWincheck = GameState.NIGHT_VOTE_CREATE;
+
+        // uint[] memory _deck = new uint[](nPlayers*2);
+        // for (uint i=0; i<nPlayers; i++) {
+        //     _deck[i*2]   = deck[i][0];
+        //     _deck[i*2+1] = deck[i][1];
+        // }
+
         secureAdd.startWinCheck
             (playerAddresses, playerPubKeys, deck, playerStillInGame, nPlayersStillInGame);
 
@@ -335,7 +352,9 @@ contract TestGame is GameStorage {
 
         // if neither side won, proceed with the game
         gameState = stateToGoAfterWincheck;
+        if (gameState == GameState.NIGHT_VOTE_CREATE) {
+            emit EnterNightVote();
+        }
     }
-
 }
 

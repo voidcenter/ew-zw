@@ -1,8 +1,12 @@
 import { batchWaitTxs, sleep } from './helpers';
-import { AggregateKeyProof, DecryptProof, EncryptAndShuffleProof, MockPlayer, Tuple2n, WinCheck_CreateShares_Proof, WinCheck_AggregateShares_Proof } from "./MockPlayer";
+import { AggregateKeyProof, DecryptProof, EncryptAndShuffleProof, MockPlayer, Tuple2n, WinCheck_CreateShares_Proof, WinCheck_AggregateShares_Proof, getRoleName } from "./MockPlayer";
 import { TestGame, StandaloneShuffle, SecureAdd } from '../../typechain-types';
 import { strict as assert } from 'assert';
 import { Wallet } from "ethers";
+import { LocalMsg, dayVoteChat, lobbyChat } from '../../gpt/chat';
+import { chat_msgs, socket } from './socket';
+
+export const Player_Names = ['Alice', 'Bob', 'Carol', 'Dave', 'Eve'];
 
 
 enum GameState {
@@ -21,6 +25,7 @@ enum GameState {
     MAFIA_WIN 
   }
 
+const Talkativeness = 0.4;
 
 
 // Test multiplayers each generate a pk/sk and aggregate pks into agg key, onchain
@@ -58,10 +63,35 @@ export async function lobby(testGame: TestGame, owner: Wallet, players: MockPlay
 
     console.log('waiting for everyone to join ...');
     
+
     // Wait for listner to update the game state upon receiving the log event from contract 
     while ((await testGame.nPlayers()) != BigInt(nPlayers)) {
-        sleep(1000);    
+
+        if (chat_msgs.length > 40) {
+            await sleep(1000);    
+            continue;
+        }
+
+        // if (false) 
+        {
+            for (let i=0; i<nJoining; i++) {
+
+                if (Math.random() < Talkativeness) {
+                    const playerName = Player_Names[i];
+                    const new_msg = await lobbyChat(chat_msgs, playerName);
+                    chat_msgs.push(new_msg);
+                    // console.log(msgs);
+                    const formattedMsg = `${new_msg.player}: ${new_msg.msg}`
+                    console.log (formattedMsg);
+        
+                    socket.emit('chat', formattedMsg);    
+                } 
+
+                await sleep(1000);    
+            }
+        }
     } 
+
 
     console.log('Game state = ', await testGame.gameState(), 'nPlayers = ', (await testGame.nPlayers()).toString());
     console.log('players = ', await testGame.getPlayerAddresses());
@@ -246,6 +276,59 @@ export async function dayVote(testGame: TestGame, players: MockPlayer[], demoWeb
     const nVoting = nPlayers - (demoWeb3 ? 1 : 0);
 
     const playerStillInGame = await testGame.getPlayerStillInGame();
+    const nPlayersStillInGame = Number(await testGame.nPlayersStillInGame());
+    
+    const remainingPlayerNames = [...Array(nPlayers).keys()]
+        .map(i => playerStillInGame[i] ? Player_Names[i] : undefined)
+        .filter(e => e)
+        .join(', ');
+
+
+    const letAllRemainingPlayersTalk = async () => {
+        for (let i=0; i<nVoting; i++) {
+
+            // elimiated player can't talk
+            if (!playerStillInGame[i]) {
+                continue;
+            }
+
+            if (Math.random() < Talkativeness) {
+                const playerName = Player_Names[i];
+                const player = players[i];
+
+                const { msg, suspect } = await dayVoteChat(
+                    chat_msgs, playerName, getRoleName(player.role), getRoleName(player.role),
+                    nPlayersStillInGame, remainingPlayerNames);
+
+                chat_msgs.push(msg);
+                // console.log(msgs);
+                const formattedMsg = `${msg.player}: ${msg.msg}`
+                console.log (formattedMsg, 'suspect = ', suspect);
+        
+                socket.emit('chat', formattedMsg);
+            }
+
+            await sleep(2200);    
+        }    
+    }
+
+    if (demoWeb3) {
+        const nRounds = 2;  // chat 3 rounds before voting
+        chat_msgs.length = 0;
+        for (let round = 0; round < nRounds; round ++) {
+            await letAllRemainingPlayersTalk();
+        }
+    }
+
+
+    // states
+    console.log('testgame. playerAddresses = ', await testGame.getPlayerAddresses());
+    console.log('testgame. playerPubKeys = ', await testGame.getPlayerPubKeys());
+    console.log('testgame. deck = ', await testGame.getDeck());
+    console.log('testgame. playerStillInGame = ', await testGame.getPlayerStillInGame());
+    console.log('testgame. nPlayersStillInGame = ', await testGame.nPlayersStillInGame());
+
+
     
     let txs = [];
     for (let i=0; i<nVoting; i++) {
@@ -261,10 +344,17 @@ export async function dayVote(testGame: TestGame, players: MockPlayer[], demoWeb
             vote = Math.floor(Math.random() * nPlayers);
         } while (vote == i || !playerStillInGame[vote]);
         
-        txs.push(await testGame.connect(player.getSigner()).dayVote(vote,
+        // txs.push(await testGame.connect(player.getSigner()).dayVote(vote,
+        //     { gasLimit: 1_000_000 }
+        // ));
+
+        // const pv = [4,2,0,1,2];
+        // vote = pv[i];
+
+        console.log('before submitting vote to contract ', i, vote);
+        await (await testGame.connect(player.getSigner()).dayVote(vote,
             { gasLimit: 1_000_000 }
-        ));
-        // await (await testGame.connect(player.getSigner()).dayVote(vote)).wait();
+        )).wait();
         console.log(`player ${i} voted for player ${vote}`);
     }   
     batchWaitTxs(txs);
@@ -273,7 +363,9 @@ export async function dayVote(testGame: TestGame, players: MockPlayer[], demoWeb
 
     // Wait for listner to update the game state upon receiving the log event from contract 
     while (Number((await testGame.gameState())) == GameState.DAY_VOTE) {
-        sleep(1000);    
+
+        // await letAllRemainingPlayersTalk();
+        sleep(10000);    
     } 
 
     console.log('player stills in game = ', await testGame.getPlayerStillInGame()); 
@@ -301,16 +393,16 @@ export async function wincheck_create(
 
         let proof: WinCheck_CreateShares_Proof = await player.winCheck_createShares(nPlayers, offset);
 
-        console.log();
+        console.log(proof);
         console.log('player ', player.getSigner()?.address, ' submitting shares ...');
         // console.log('proof = ', proof);
 
-        txs.push(await secureAdd.connect(player.getSigner()).wincheck_submit_shares(proof,
-            { gasLimit: 3_000_000 }
-        ));
-        // const r = await (await secureAdd.connect(player.getSigner()).wincheck_submit_shares(proof
-        //     { gasLimit: 3_000_000 }            
-        // )).wait();
+        // txs.push(await secureAdd.connect(player.getSigner()).wincheck_submit_shares(proof,
+        //     { gasLimit: 3_000_000 }
+        // ));
+        const r = await (await secureAdd.connect(player.getSigner()).wincheck_submit_shares(proof,
+            { gasLimit: 3_000_000 }            
+        )).wait();
         // console.log(r);
     }
     batchWaitTxs(txs);
@@ -356,10 +448,12 @@ export async function wincheck_aggregate(
         // const r = await t.wait();
         // // console.log('r = ', r);
 
-        txs.push(await secureAdd.connect(player.getSigner()).wincheck_aggregate_shares(proof,
-            { gasLimit: 1_000_000 }
-        ));
-        // await (await secureAdd.connect(player.getSigner()).wincheck_aggregate_shares(proof)).wait();
+        // txs.push(await secureAdd.connect(player.getSigner()).wincheck_aggregate_shares(proof,
+        //     { gasLimit: 3_000_000 }
+        // ));
+        await (await secureAdd.connect(player.getSigner()).wincheck_aggregate_shares(proof,
+            { gasLimit: 3_000_000 }
+        )).wait();
     }
     batchWaitTxs(txs);
 

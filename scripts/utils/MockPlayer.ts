@@ -68,6 +68,15 @@ export enum Role {
 }
 
 
+export function getRoleName(role: Role) {
+    return role == Role.VILLAGER 
+    ? "Villager" 
+    : (role == Role.MAFIA
+        ? "Werewolf" : "Undefined");
+}
+
+
+
 // intersting, how to create n shares adding up to v + n * offset, such that 
 // all shares are positive ?   v is positive 
 //
@@ -287,6 +296,9 @@ export class MockPlayer {
             randomness2,
             pks: this.playerPublicKeys
         };
+
+        console.log('player secret data = ', data);
+        
         // console.log(JSON.stringify(data, (_, v) => typeof v === 'bigint' ? v.toString() : v));
 
         // console.log('win check create data = ', data);

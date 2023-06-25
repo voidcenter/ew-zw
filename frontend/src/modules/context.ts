@@ -55,10 +55,12 @@ export enum GameState {
   ]
 
 
-const Shuffle_Contract_Address = "0x910D9A237E41D5e5D3F2198802F40167a3e5D2a4";
-const Secure_Add_Contract_Address = "0x82A90a2bB096eb58441337D9fCB070c49EF01cad";
-const Game_Contract_Address = "0x954120C042f4a4f3654957362D8D3A69D31E22ed";
 
+  export const standaloneShuffleAddress = '0x0ca1cfB29D969B0Cb881613f1C7D98B85cB8b693';
+  export const secureAddAddress = '0x6DCaBdd0B846C211611De50E9315ceEa02AC12A4';
+  export const gameContractAddress = '0x0d7CFC9C262De71cf51CfC2C66cBC90391c263Ae';
+  
+  
 
 const privateKey = 872634;   // fix this for now to make it easier to debug 
 
@@ -73,13 +75,13 @@ export const signer = provider.getSigner()
 export const myPlayerIndex = 4;
 export const player = new MockPlayer(myPlayerIndex, signer as any, privateKey);
 
-export const gameContract = new ethers.Contract(Game_Contract_Address, gameContractABI.abi, provider);
+export const gameContract = new ethers.Contract(gameContractAddress, gameContractABI.abi, provider);
 export const gameContractWithSigner = gameContract.connect(signer);
 
-export const shuffleContract = new ethers.Contract(Shuffle_Contract_Address, shuffleContractABI.abi, provider);
+export const shuffleContract = new ethers.Contract(standaloneShuffleAddress, shuffleContractABI.abi, provider);
 export const shuffleContractWithSigner = shuffleContract.connect(signer);
 
-export const secureAddContract = new ethers.Contract(Secure_Add_Contract_Address, secureAddContractABI.abi, provider);
+export const secureAddContract = new ethers.Contract(secureAddAddress, secureAddContractABI.abi, provider);
 export const secureAddContractWithSigner = secureAddContract.connect(signer);
 
 

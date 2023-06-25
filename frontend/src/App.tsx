@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useId } from 'react';
 import { socket } from './modules/socket';
-import { eventAndChat_daemonListner, chatList } from './modules/eventAndChat';
+import { eventAndChat_daemonListner, chatList, eventList } from './modules/eventAndChat';
 import { Widgets } from './components/Widgets';
 import './app.css';
 
@@ -35,6 +35,7 @@ export function App() {
     setNight(false)
   }
 
+  const opacitySwitchers = { goToDay, goToNight, goToLobby };
 
   /* boards and input */ 
   const [tdChat, setTDChat] = useState([]);
@@ -65,6 +66,11 @@ export function App() {
       chatList.push(msg);
     });
 
+    eventList.length = 0;
+    console.log('eventList cleared');
+    console.log('eventList = ', eventList);
+    
+
     return () => {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
@@ -78,7 +84,7 @@ export function App() {
   useEffect(() => {
     timerRef.current = setInterval(
       async () => {
-        await eventAndChat_daemonListner(state, setState, pushMsgs);
+        await eventAndChat_daemonListner(state, setState, pushMsgs, opacitySwitchers);
       },
       1000
     )
@@ -97,7 +103,7 @@ export function App() {
         opacityGameScreen, opacityDay, opacityNight,
         day, night, gameScreen, 
         setOpacityDay, setOpacityNight, setOpacityGameScreen,
-        opacitySwitchers: { goToDay, goToNight, goToLobby }
+        opacitySwitchers
       }}  />
     </>
   )

@@ -200,7 +200,7 @@ export function Widgets(props: any) {
                         // ref={leftPanel}
                         colorMode={ ColorMode.Light }  
                         // onInput={ onInput }
-                        height = {`${_lh - 110}px`}
+                        height = {`${_lh - 150}px`}
                         prompt=''
                         >
                     { data.tdInfo }

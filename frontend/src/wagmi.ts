@@ -17,7 +17,7 @@ const { chains, publicClient, webSocketPublicClient } = configureChains(
 )
 
 const { connectors } = getDefaultWallets({
-  appName: 'Mafia',
+  appName: 'ZK-werewolf',
   chains,
   projectId: walletConnectProjectId,
 })
