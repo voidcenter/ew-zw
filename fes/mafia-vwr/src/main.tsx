@@ -16,3 +16,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </WagmiConfig>
   </React.StrictMode>,
 )
+
+document.body.style.overflow = "hidden"

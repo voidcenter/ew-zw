@@ -14,17 +14,8 @@
 #input:focus { outline: none; }
 #form > button { background: #333; border: none; padding: 0 1rem; margin: 0.25rem; border-radius: 3px; outline: none; color: #fff; } */
 
-
-.react-terminal-wrapper.react-terminal-light {
-    background: #222;
-    color: #1a1e24;
+body {
+    background: #000000;
 }
 
-.react-terminal-wrapper.react-terminal-light:after {
-    color: #D76D77;
-}
-
-  .react-terminal-light .react-terminal-line:before {
-    color: #D76D77;
-}
-
+  
