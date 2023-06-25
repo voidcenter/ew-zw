@@ -5,16 +5,14 @@ pragma circom 2.0.0;
 include "./algebra.circom";
 include "./el_gamal.circom";
 
-// Encrypt cards and shuffle them
 template EncryptAndShuffle(generator, num_cards, bit_length) {
 
     signal input  agg_pk;
-    signal input  deck[num_cards][2];           // cards to encrypt and shuffle
-    signal input  randomness[num_cards];        // player's randomness factors, one for each card
+    signal input  deck[num_cards][2];           
+    signal input  randomness[num_cards];        
     signal input  permutation_matrix[num_cards][num_cards]; 
-    signal output masked_deck[num_cards][2];    // shuffled array of masked cards tuples
+    signal output masked_deck[num_cards][2];    
 
-    // Validate the permutation matrix 
     component PermutationConstraint = PermutationConstraint(num_cards);
     for (var i = 0; i < num_cards; i++) {
         for (var j = 0; j < num_cards; j++) {
@@ -22,7 +20,6 @@ template EncryptAndShuffle(generator, num_cards, bit_length) {
         }
     }
 
-    // Encrypt cards
     component ElGamalEncrypter[num_cards];
     for (var i = 0; i < num_cards; i++) {
         ElGamalEncrypter[i] = ElGamalEncrypter(generator, bit_length);
@@ -32,7 +29,6 @@ template EncryptAndShuffle(generator, num_cards, bit_length) {
         ElGamalEncrypter[i].random_factor <== randomness[i];
     }
 
-    // Shuffle the deck
     component DeckShuffler = ScalarMatrixMul(num_cards, num_cards, 2);
     for (var i = 0; i < num_cards; i++) {
         for (var j = 0; j < num_cards; j++) {
@@ -40,13 +36,11 @@ template EncryptAndShuffle(generator, num_cards, bit_length) {
         }
     }
 
-    // Load encrypted cards
     for (var n = 0; n < num_cards; n++) {
         DeckShuffler.B[n][0] <== ElGamalEncrypter[n].ciphertext[0];
         DeckShuffler.B[n][1] <== ElGamalEncrypter[n].ciphertext[1];
     }
 
-    // Get shuffled deck
     for (var m = 0; m < num_cards; m++) {
         masked_deck[m][0] <== DeckShuffler.AB[m][0];
         masked_deck[m][1] <== DeckShuffler.AB[m][1];
