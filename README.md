@@ -1,1 +1,1 @@
-# ew-zw
+# ethwaterloo - ZK-Werewolf
