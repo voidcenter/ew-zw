@@ -2,6 +2,7 @@ pragma circom 2.0.0;
 
 // copied from https://github.com/sigmachirality/empty-house
 
+include "../node_modules/circomlib/circuits/comparators.circom";
 include "./algebra.circom";
 
 // Card El Gamal encryption 
@@ -29,7 +30,10 @@ template ElGamalEncrypter(generator, bit_length){
     ciphertext[0] <== message[0] * exp1.out;     
     
     // Q: why do we need this? should we assert this before computing [0]?
-    assert(ciphertext[0] != 0);                        
+    // assert(ciphertext[0] != 0); 
+    component iz = IsZero();
+    iz.in <== ciphertext[0];
+    iz.out === 0;                       
     
     // c2 = c2 * h^y, adding g^{\sum xi}^y
     ciphertext[1] <== message[1] * exp2.out;     // 
